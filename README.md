@@ -421,9 +421,9 @@ class SettingsComponent extends React.Component {
   constructor() {
     this.state = {
         user: {
-        name: 'Foo Bar',
-        email: 'foobar@example.com'
-      }
+          name: 'Foo Bar',
+          email: 'foobar@example.com'
+        }
     };
   }
   editedUser(user: User){
