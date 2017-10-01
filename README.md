@@ -8,7 +8,7 @@ Comparison of different approaches in writing web applications. Based on React, 
 
 > Note regarding framework naming:
 > - AngularJS means Angular v1.x
-> - Angular menas Angular v2+
+> - Angular means Angular v2+
 >
 > See: http://angularjs.blogspot.com/2017/01/branding-guidelines-for-angular-and.html
 
@@ -142,6 +142,123 @@ class CoursesListController {
     }
 }
 ```
+
+# Inputs and Outputs
+
+### AngularJS
+
+AngularJs has introduced a new syntax for inputs/outputs which was back ported from Angular. The main purpose of this new syntax is to enforce the One-way dataflow pattern. Read more
+on the [official documentation](https://docs.angularjs.org/guide/component#component-based-application-architecture):
+
+```js
+class CoursesListController { }
+
+const component = {
+  bindings: {
+    user: '<',
+    department: '@',
+    onEdit: '&',
+  },
+  template: `
+  <h1>{{ $ctrl.department }}</h1>
+  <form name="list" ng-submit="$ctrl.onEdit();">
+    <input type="text" ng-model="$ctrl.user.name">
+    <button type="submit">Submit</button>
+  </form>
+  `,
+  controller: CoursesListController,
+};
+
+export default module.component('my-component', component);
+```
+
+In a parent component:
+
+```html
+  <my-component user="myUser" department="title here" on-edit="callMyEdit()"></my-component>
+```
+
+### Angular
+
+Angular introduced a new pattern for Component interactions, this pattern follows the [Flux](https://facebook.github.io/flux/) architecture. Read more on [the official documentation](https://angular.io/guide/component-interaction).
+
+```js
+import {Component, EventEmitter} form '@angular/core';
+@Component({
+  selector: 'ngx-component',
+  template: `
+    <h1>{{ department }}</h1>
+    <form name="list" (ngSubmit)="submit();">
+      <input type="text" [(ngModel)]="user.name">
+      <button type="submit">Submit</button>
+    </form>
+  `
+})
+export class CoursesListController {
+
+  @Input()
+  user: User;
+
+  @Input()
+  department: string;
+
+  @Output()
+  onEdit: EventEmitter<boolean>;
+
+  constructor() {
+    this.onEdit = new EventEmitter();
+  }
+
+  submit() {
+    this.onEdit.next(true);
+  }
+
+}
+```
+
+In a parent component:
+
+```html
+  <ngx-component [user]="myUser" department="title here" (onEdit)="callMyEdit($event)"></ngx-component>
+```
+
+### React
+
+```js
+import React from 'react';
+import PropTypes from 'prop-types';
+
+class CoursesListController extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return (
+      <h1>{ this.props.department }</h1>
+      <form name="list" onSubmit={this.props.onEdit}>
+        <input type="text" value={this.props.user.value} >
+        <button type="submit">Submit</button>
+      </form>
+    );
+  }
+}
+
+CoursesListController.propTypes = {
+  department: PropTypes.string.isRequired,
+  user: PropTypes.instanceOf(User)
+};
+```
+
+In a parent component:
+
+```html
+  <CoursesListController user={this.state.myUser} department={this.state.title} onEdit={() => this.callMyEdit()}>
+  </CoursesListController>
+```
+
+Read more about React's [PropTypes](https://reactjs.org/docs/typechecking-with-proptypes.html).
+
+For communication between two components that don't have a parent-child relationship, you can set up your own global event system. Subscribe to events in componentDidMount(), unsubscribe in componentWillUnmount(), and call setState() when you receive an event. [Flux](https://facebook.github.io/flux/) pattern is one of the possible ways to arrange this.
 
 # Dependency injection
 
