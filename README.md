@@ -152,7 +152,7 @@ class ChangePassword {
 
 ### AngularJS
 ```js
-class CoursesListController {
+class UserPreviewComponent {
     $onChanges(bindings) {
         if (typeof bindings.displayPurchased.currentValue === 'undefined') {
             this.displayPurchased = true;
@@ -169,7 +169,7 @@ const component = {
         displayAvailable: '<',
     },
     template,
-    controller: CoursesListController,
+    controller: UserPreviewComponent,
 };
 ```
 
@@ -179,7 +179,7 @@ const component = {
 
 ### React
 ```jsx
-class CoursesListController {
+class UserPreviewComponent {
     static propTypes = {
         displayPurchased: PropTypes.bool,
         displayAvailable: PropTypes.bool,
@@ -195,123 +195,6 @@ class CoursesListController {
     }
 }
 ```
-
-# Inputs and Outputs
-
-### AngularJS
-
-AngularJs has introduced a new syntax for inputs/outputs which was back ported from Angular. The main purpose of this new syntax is to enforce the One-way dataflow pattern. Read more
-on the [official documentation](https://docs.angularjs.org/guide/component#component-based-application-architecture):
-
-```js
-class CoursesListController { }
-
-const component = {
-  bindings: {
-    user: '<',
-    department: '@',
-    onEdit: '&',
-  },
-  template: `
-  <h1>{{ $ctrl.department }}</h1>
-  <form name="list" ng-submit="$ctrl.onEdit();">
-    <input type="text" ng-model="$ctrl.user.name">
-    <button type="submit">Submit</button>
-  </form>
-  `,
-  controller: CoursesListController,
-};
-
-export default module.component('my-component', component);
-```
-
-In a parent component:
-
-```html
-  <my-component user="myUser" department="title here" on-edit="callMyEdit()"></my-component>
-```
-
-### Angular
-
-Angular introduced a new pattern for Component interactions, this pattern follows the [Flux](https://facebook.github.io/flux/) architecture. Read more on [the official documentation](https://angular.io/guide/component-interaction).
-
-```js
-import {Component, EventEmitter} form '@angular/core';
-@Component({
-  selector: 'ngx-component',
-  template: `
-    <h1>{{ department }}</h1>
-    <form name="list" (ngSubmit)="submit();">
-      <input type="text" [(ngModel)]="user.name">
-      <button type="submit">Submit</button>
-    </form>
-  `
-})
-export class CoursesListController {
-
-  @Input()
-  user: User;
-
-  @Input()
-  department: string;
-
-  @Output()
-  onEdit: EventEmitter<boolean>;
-
-  constructor() {
-    this.onEdit = new EventEmitter();
-  }
-
-  submit() {
-    this.onEdit.next(true);
-  }
-
-}
-```
-
-In a parent component:
-
-```html
-  <ngx-component [user]="myUser" department="title here" (onEdit)="callMyEdit($event)"></ngx-component>
-```
-
-### React
-
-```js
-import React from 'react';
-import PropTypes from 'prop-types';
-
-class CoursesListController extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-  render() {
-    return (
-      <h1>{ this.props.department }</h1>
-      <form name="list" onSubmit={this.props.onEdit}>
-        <input type="text" value={this.props.user.value} >
-        <button type="submit">Submit</button>
-      </form>
-    );
-  }
-}
-
-CoursesListController.propTypes = {
-  department: PropTypes.string.isRequired,
-  user: PropTypes.instanceOf(User)
-};
-```
-
-In a parent component:
-
-```html
-  <CoursesListController user={this.state.myUser} department={this.state.title} onEdit={() => this.callMyEdit()}>
-  </CoursesListController>
-```
-
-Read more about React's [PropTypes](https://reactjs.org/docs/typechecking-with-proptypes.html).
-
-For communication between two components that don't have a parent-child relationship, you can set up your own global event system. Subscribe to events in componentDidMount(), unsubscribe in componentWillUnmount(), and call setState() when you receive an event. [Flux](https://facebook.github.io/flux/) pattern is one of the possible ways to arrange this.
 
 # Dependency injection
 
@@ -404,22 +287,36 @@ Templates in React are written inside the JavaScript file using the [JSX languag
 
 # Inputs and Outputs
 
-### Angular
+### AngularJS
+
+AngularJs has introduced a new syntax for inputs/outputs which was back ported from Angular. The main purpose of this new syntax is to enforce the One-way dataflow pattern. Read more
+on the [official documentation](https://docs.angularjs.org/guide/component#component-based-application-architecture):
 
 ```js
-@Component({
-  selector: 'settings',
+class UserPreviewComponent { }
+
+const component = {
+  bindings: {
+    user: '<',
+    onEdit: '&',
+  },
   template: `
-    <user-preview
-      [user]="user"
-      (onEdit)="editedUser($event)"
-    >
+  <form ng-submit="$ctrl.onEdit();">
+    <input type="text" ng-model="$ctrl.user.name">
+    <input type="text" ng-model="$ctrl.user.email">
+    <button type="submit">Submit</button>
+  </form>
+  `,
+  controller: UserPreviewComponent,
+};
 
-    </user-preview>
-  `
-})
+export default module.component('user-preview', component);
+```
 
-export class Settings {
+In a parent component, ie `SettingsComponent`:
+
+```js
+class SettingsComponent {
   user: User;
   constructor() {
     this.user = {
@@ -427,28 +324,35 @@ export class Settings {
       email: 'foobar@example.com'
     }
   }
-
   editedUser(user: User){
     console.log('Name of the edited user is', user.name);
   }
 }
 
+const component = {
+  template: `<user-preview user="user" on-edit="editedUser()"></user-preview>`,
+  controller: SettingsComponent,
+};
+
+export default module.component('app-settings', component);
 ```
+
+### Angular
+
+Angular introduced a new pattern for Component interactions, this pattern follows the [Flux](https://facebook.github.io/flux/) architecture. Read more on [the official documentation](https://angular.io/guide/component-interaction).
 
 ```js
 @Component({
   selector: 'user-preview',
   template: `
-    <p>
-      <input type="text" value="{{user.name}}">
-    </p>    
-      <input type="text" value="{{user.email}}">
-    
-    <button (click)="emitEditedUser()">
+  <form (ngSubmit)="emitEditedUser();">
+    <input type="text" value="{{user.name}}">
+    <input type="text" value="{{user.email}}">
+    <button type="submit">Submit</button>
+  </form>
   `
 })
-
-export class UserPreview {
+export class UserPreviewComponent {
   @Input() user: User;
   @Output() onEdit: EventEmitter = new EventEmitter<User>();
 
@@ -458,6 +362,85 @@ export class UserPreview {
 }
 
 ```
+
+In a parent component, ie `SettingsComponent`:
+
+```js
+@Component({
+  selector: 'app-settings',
+  template: `
+    <user-preview [user]="user" (onEdit)="editedUser($event)"></user-preview>
+  `
+})
+export class SettingsComponent {
+  user: User;
+  constructor() {
+    this.user = {
+      name: 'Foo Bar',
+      email: 'foobar@example.com'
+    }
+  }
+  editedUser(user: User){
+    console.log('Name of the edited user is', user.name);
+  }
+}
+```
+
+### React
+
+```js
+import React from 'react';
+import PropTypes from 'prop-types';
+
+class UserPreviewComponent extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return (
+      <form  onSubmit={this.props.onEdit}>
+        <input type="text" value={this.props.user.email} >
+        <input type="text" value={this.props.user.name} >
+        <button type="submit">Submit</button>
+      </form>
+    );
+  }
+}
+
+UserPreviewComponent.propTypes = {
+  user: PropTypes.instanceOf(User)
+};
+```
+
+In a parent component, ie `SettingsComponent`:
+
+```js
+import React from 'react';
+
+class SettingsComponent extends React.Component {
+  constructor() {
+    this.state = {
+        user: {
+        name: 'Foo Bar',
+        email: 'foobar@example.com'
+      }
+    };
+  }
+  editedUser(user: User){
+    console.log('Name of the edited user is', user.name);
+  }
+  render() {
+    return (
+      <UserPreviewComponent user={this.state.user} onEdit={(user) => this.editedUser(user)}>
+      </UserPreviewComponent>
+    );
+  }
+}
+```
+
+Read more about React's [PropTypes](https://reactjs.org/docs/typechecking-with-proptypes.html).
+
+For communication between two components that don't have a parent-child relationship, you can set up your own global event system. Subscribe to events in componentDidMount(), unsubscribe in componentWillUnmount(), and call setState() when you receive an event. [Flux](https://facebook.github.io/flux/) pattern is one of the possible ways to arrange this.
 
 # Forms
 
