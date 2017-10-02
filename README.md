@@ -152,7 +152,7 @@ class ChangePassword {
 
 ### AngularJS
 ```js
-class UserPreviewComponent {
+class CoursesListController {
     $onChanges(bindings) {
         if (typeof bindings.displayPurchased.currentValue === 'undefined') {
             this.displayPurchased = true;
@@ -169,7 +169,7 @@ const component = {
         displayAvailable: '<',
     },
     template,
-    controller: UserPreviewComponent,
+    controller: CoursesListController,
 };
 ```
 
@@ -179,7 +179,7 @@ const component = {
 
 ### React
 ```jsx
-class UserPreviewComponent {
+class CoursesListController {
     static propTypes = {
         displayPurchased: PropTypes.bool,
         displayAvailable: PropTypes.bool,
@@ -388,14 +388,11 @@ export class SettingsComponent {
 
 ### React
 
-```js
+```jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 
 class UserPreviewComponent extends React.Component {
-  constructor(props) {
-    super(props);
-  }
   render() {
     return (
       <form  onSubmit={this.props.onEdit}>
@@ -431,8 +428,7 @@ class SettingsComponent extends React.Component {
   }
   render() {
     return (
-      <UserPreviewComponent user={this.state.user} onEdit={(user) => this.editedUser(user)}>
-      </UserPreviewComponent>
+      <UserPreviewComponent user={this.state.user} onEdit={(user) => this.editedUser(user)} />
     );
   }
 }
